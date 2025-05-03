@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Adverse Media Checker</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+    }
+    input, select, button {
+      padding: 10px;
+      margin: 5px 0;
+      width: 100%;
+    }
+    .output {
+      margin-top: 20px;
+      background: #f4f4f4;
+      padding: 20px;
+      border-radius: 5px;
+    }
+    h4 {
+      margin-bottom: 10px;
+      color: #333;
+    }
+  </style>
+</head>
+<body>
+  <h2>Adverse Media Checker</h2>
+
+  <label for="query">Enter Name or Company:</label>
+  <input type="text" id="query" placeholder="e.g., Elon Musk" />
+
+  <label for="type">Type:</label>
+  <select id="type">
+    <option value="person">Person</option>
+    <option value="company">Company</option>
+  </select>
+
+  <button onclick="checkAdverseMedia()">Check</button>
+
+  <div class="output" id="result"></div>
+
+  <script>
+    async function checkAdverseMedia() {
+      const query = document.getElementById('query').value;
+      const type = document.getElementById('type').value;
+      const resultDiv = document.getElementById('result');
+
+      resultDiv.innerHTML = 'Loading...';
+
+      try {
+        const response = await fetch('/verify', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ query, type })
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+          const summary = data.summary;
+
+          resultDiv.innerHTML = `
+            <h4>🧾 Risk Summary</h4>
+            <p><strong>Risk Level:</strong> ${summary.risk_level || 'N/A'}</p>
+            <p><strong>Reason:</strong> ${summary.reason || 'N/A'}</p>
+            <p><strong>Summary:</strong> ${summary.summary || 'N/A'}</p>
+
+            <h4>🔗 Sources</h4>
+            <ul>
+              ${data.sources.map(link => `<li><a href="${link}" target="_blank">${link}</a></li>`).join('')}
+            </ul>
+          `;
+        } else {
+          resultDiv.innerHTML = `<p style="color:red;">Error: ${data.detail}</p>`;
+        }
+      } catch (err) {
+        resultDiv.innerHTML = `<p style="color:red;">Unexpected error: ${err.message}</p>`;
+      }
+    }
+  </script>
+</body>
+</html>
