@@ -1,0 +1,7 @@
+fastapi
+uvicorn
+openai
+requests
+python-dotenv
+pdfkit
+couchbase==4.1.6
